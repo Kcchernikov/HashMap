@@ -4,39 +4,40 @@
 #include<memory>
 #include<list>
 
-// This is a hash table class with open addressing based on linear probing. Deleted items are marked dead and cleared when the table capacity is reallocated.
+// This is a hash table class with open addressing based on linear probing.
+// Deleted items are marked dead and cleared when the table capacity is reallocated.
 // Mathematical expectation of running time is O(1). Hash table is implemented scaling up (https://en.wikipedia.org/wiki/Open_addressing).
 
-// A "bidirectional" iterator class for Hash Table formulaic of pair (key, value).
+// A "bidirectional" iterator (Biterator) class for Hash Table formulaic of pair (key, value).
 template<class KeyType, class ValueType>
-class Literator: public std::iterator<std::forward_iterator_tag, std::pair<KeyType, ValueType>> {
+class Biterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyType, ValueType>> {
   public:
     // Default constructor.
-    Literator(): ptr(nullptr), it(nullptr) {}
+    Biterator(): ptr(nullptr), it(nullptr) {}
     // Сonstructor by pointer to a pair and iterator. 
-    Literator(std::pair<KeyType, ValueType>* _ptr, std::list<size_t>::iterator _it) {
+    Biterator(std::pair<KeyType, ValueType>* _ptr, std::list<size_t>::iterator _it) {
         ptr = _ptr;
         it = _it;
     }
     // Operator ++. All the operators below work for O(1).
-    Literator& operator++() {
+    Biterator& operator++() {
         ++it;
         return *this;
     }
     
-    Literator operator ++(int) {
-        Literator temp = *this;
+    Biterator operator ++(int) {
+        Biterator temp = *this;
         ++*this;
         return temp;
     }
 
-    Literator& operator--() {
+    Biterator& operator--() {
         --it;
         return *this;
     }
     
-    Literator operator --(int) {
-        Literator temp = *this;
+    Biterator operator --(int) {
+        Biterator temp = *this;
         --*this;
         return temp;
     }
@@ -57,11 +58,11 @@ class Literator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
         return (ptr + (*it));
     }
 
-    bool operator==(const Literator& other) const {
+    bool operator==(const Biterator& other) const {
         return it == other.it;
     }
     
-    bool operator!=(const Literator& other) const {
+    bool operator!=(const Biterator& other) const {
         return it != other.it;        
     }
     
@@ -69,36 +70,36 @@ class Literator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
     std::pair<KeyType, ValueType>* ptr;
     std::list<size_t>::iterator it;
 };
-// A const "bidirectional" iterator class for Hash Table formulaic of pair (key, value).
+// A const "bidirectional" iterator (Biterator) class for Hash Table formulaic of pair (key, value).
 template<class KeyType, class ValueType>
-class ConstLiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyType, ValueType>> {
+class ConstBiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyType, ValueType>> {
   public:
     // Default constuctor.
-    ConstLiterator(): ptr(nullptr), it(nullptr) {}
+    ConstBiterator(): ptr(nullptr), it(nullptr) {}
     // Сonstructor by pointer to a pair and iterator. 
-    ConstLiterator(std::pair<KeyType, ValueType>* _ptr, const std::list<size_t>::const_iterator _it) {
+    ConstBiterator(std::pair<KeyType, ValueType>* _ptr, const std::list<size_t>::const_iterator _it) {
         ptr = _ptr;
         it = _it;
     }
     // Operator ++. All the operators below work for O(1).
-    ConstLiterator& operator++() {
+    ConstBiterator& operator++() {
         ++it;
         return *this;
     }
     
-    ConstLiterator operator ++(int) {
-        ConstLiterator temp = *this;
+    ConstBiterator operator ++(int) {
+        ConstBiterator temp = *this;
         ++*this;
         return temp;
     }
 
-    ConstLiterator& operator--() {
+    ConstBiterator& operator--() {
         --it;
         return *this;
     }
     
-    ConstLiterator operator --(int) {
-        ConstLiterator temp = *this;
+    ConstBiterator operator --(int) {
+        ConstBiterator temp = *this;
         --*this;
         return temp;
     }
@@ -111,11 +112,11 @@ class ConstLiterator: public std::iterator<std::forward_iterator_tag, std::pair<
         return (ptr + (*it));
     }
 
-    bool operator==(const ConstLiterator& other) const {
+    bool operator==(const ConstBiterator& other) const {
         return it == other.it;
     }
 
-    bool operator!=(const ConstLiterator& other) const {
+    bool operator!=(const ConstBiterator& other) const {
         return it != other.it;
     }
     
@@ -123,15 +124,16 @@ class ConstLiterator: public std::iterator<std::forward_iterator_tag, std::pair<
     std::pair<KeyType, ValueType>* ptr;
     std::list<size_t>::const_iterator it;
 };
-// Hash table with open addressing based on linear probing. Deleted items are marked dead and cleared when the table capacity is reallocated.
+// Hash table with open addressing based on linear probing.
+// Deleted items are marked dead and cleared when the table capacity is reallocated.
 // Mathematical expectation of running time is O(1). Hash table is implemented scaling up (https://en.wikipedia.org/wiki/Open_addressing).
 
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType> >
 class HashMap {
   public:
     constexpr static int SIZELIMIT = 4, INCREASE = 8, MINSIZE = 8, ALIVE = 1, DEAD = 2, EMPTY = 0;
-    typedef Literator<const KeyType, ValueType> iterator;
-    typedef ConstLiterator<const KeyType, ValueType> const_iterator;    
+    typedef Biterator<const KeyType, ValueType> iterator;
+    typedef ConstBiterator<const KeyType, ValueType> const_iterator;    
     // Default constructor.
     HashMap(const Hash& _hasher_ = Hash()): capacity_(MINSIZE), fullness_(0), dead_elem_(0), hasher_(_hasher_) {
          data_ = static_cast<std::pair<const KeyType, ValueType>*>(operator new(sizeof(std::pair<const KeyType, ValueType>) * capacity_));
@@ -150,9 +152,7 @@ class HashMap {
         occupied_[id] = ALIVE;
         nodes_.push_back(id);
         iters_[id] = --nodes_.end();
-        if ((fullness_ + dead_elem_) * SIZELIMIT > capacity_) {
-            change_capacity_(std::max(static_cast<size_t>(MINSIZE), fullness_ * INCREASE));
-        }
+        adapt_size_();   
     }
     // Deleting an item by marking it dead.
     void erase(const KeyType& key) {
@@ -165,21 +165,21 @@ class HashMap {
     }
     // Constructor from a pair of iterators.
     template<typename Iterator>
-    HashMap(const Iterator& beg, const Iterator& en, const Hash& _hasher_ = Hash()): fullness_(0), dead_elem_(0), hasher_(_hasher_) {
-        Iterator begin1 = beg;
+    HashMap(const Iterator& start, const Iterator& finish, const Hash& _hasher_ = Hash()): fullness_(0), dead_elem_(0), hasher_(_hasher_) {
+        Iterator it = start;
         size_t sz = 0;
-        while (begin1 != en) {
-            ++begin1;
+        while (it != finish) {
+            ++it;
             ++sz;
         }
         capacity_ = std::max(static_cast<size_t>(MINSIZE), INCREASE*sz);
         data_ = static_cast<std::pair<const KeyType, ValueType>*>(operator new(sizeof(std::pair<const KeyType, ValueType>) * capacity_));
         occupied_ = new char[capacity_];
         init_occupied_();                  
-        auto begin2 = beg;
-        while (begin2 != en) {
-            insert((*begin2));
-            ++begin2;
+        it = start;
+        while (it != finish) {
+            insert((*it));
+            ++it;
         }
     }
     // Constructor from a list of elements.
@@ -327,7 +327,7 @@ class HashMap {
     Hash hasher_;
     
     typedef std::pair<const KeyType, ValueType> PtrClass;
-    // Clean memory, call destructor for each element, clean nodes list/
+    // Clean memory, call destructor for each element, clean nodes list.
     void deallocate_() {
         for (size_t i = 0; i < capacity_; ++i) {
             if (occupied_[i] != 0) {
@@ -359,7 +359,6 @@ class HashMap {
             occupied_[i] = EMPTY;
         }
     }
-
     // Linear search for a free cell with a step of 1.    
     size_t find_position_(const KeyType& key) const {
         size_t seed = hasher_(key);
@@ -371,5 +370,11 @@ class HashMap {
             }                    
         }
         return id;
+    }
+    // Checks scalability condition.
+    void adapt_size_() {
+        if ((fullness_ + dead_elem_) * SIZELIMIT > capacity_) {
+            change_capacity_(std::max(static_cast<size_t>(MINSIZE), fullness_ * INCREASE));
+        }    
     }
 };
