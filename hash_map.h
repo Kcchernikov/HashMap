@@ -3,7 +3,6 @@
 #include<initializer_list>
 #include<memory>
 #include<list>
-#include<vector>
 // This is a hash table class with open addressing based on linear probing.
 // Deleted items are marked dead and cleared when the table capacity is reallocated.
 // Mathematical expectation of running time is O(1). Hash table is implemented scaling up (https://en.wikipedia.org/wiki/Open_addressing).
