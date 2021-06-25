@@ -13,6 +13,7 @@ class Fiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
   public:
     // Default constructor.
     Fiterator(): ptr(nullptr), char_ptr(0) {}
+    
     // Constructor by pointer to a pair, pointer to char, capacity and number_in_table.
     Fiterator(std::pair<KeyType, ValueType>* _ptr, char* _char_ptr, size_t cap, size_t _number_in_table) {
         ptr = _ptr;
@@ -20,6 +21,7 @@ class Fiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
         capacity = cap;
         number_in_table = _number_in_table;
     }
+    
     // Operator ++, amortized time is O(1).
     Fiterator& operator++() {
         if (number_in_table != capacity) {
@@ -41,6 +43,7 @@ class Fiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
         ++*this;
         return temp;
     }
+    
     // Operator --, amortized time is O(1).
     Fiterator& operator--() {
         if (number_in_table != 0) {
@@ -62,6 +65,7 @@ class Fiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
         --*this;
         return temp;
     }
+    
     // Operator *, returns a reference to the object.
     std::pair<KeyType, ValueType>& operator*() {
         return *(ptr);
@@ -86,6 +90,7 @@ class Fiterator: public std::iterator<std::forward_iterator_tag, std::pair<KeyTy
     bool operator != (const Fiterator& other) const {
         return !(number_in_table == other.number_in_table);
     }
+    
   private:
     std::pair<KeyType, ValueType>* ptr;
     char* char_ptr;
@@ -97,6 +102,7 @@ class ConstFiterator: public std::iterator<std::forward_iterator_tag, std::pair<
   public:
     // Default constructor.
     ConstFiterator(): ptr(nullptr), char_ptr(0) {}
+    
     // Constructor by pointer to a pair, pointer to char, capacity and number_in_table.
     ConstFiterator(std::pair<KeyType, ValueType>* _ptr, char* _char_ptr, size_t cap, size_t _number_in_table) {
         ptr = _ptr;
@@ -104,6 +110,7 @@ class ConstFiterator: public std::iterator<std::forward_iterator_tag, std::pair<
         capacity = cap;
         number_in_table = _number_in_table;
     }
+    
     // Operator ++, amortized time is O(1).
     ConstFiterator& operator++() {
         if (number_in_table != capacity) {
@@ -125,6 +132,7 @@ class ConstFiterator: public std::iterator<std::forward_iterator_tag, std::pair<
         ++*this;
         return temp;
     }
+    
     // Operator --, amortized time is O(1).
     ConstFiterator& operator--() {
         if (number_in_table != 0) {
@@ -150,19 +158,20 @@ class ConstFiterator: public std::iterator<std::forward_iterator_tag, std::pair<
     const std::pair<KeyType, ValueType>& operator*() const {
         return *(ptr);
     }
+    
     // Operator *, returns a reference to the object.
     const std::pair<KeyType, ValueType>* operator->() const {
         return (ptr);
     }
 
     bool operator == (const ConstFiterator& other) const {
-  //      if (ptr == nullptr && other.ptr == nullptr) return true;
         return number_in_table == other.number_in_table;
     }
 
     bool operator != (const ConstFiterator& other) const {
         return !(number_in_table == other.number_in_table);
     }
+    
   private:
     std::pair<KeyType, ValueType>* ptr;
     char* char_ptr;
@@ -176,7 +185,12 @@ class ConstFiterator: public std::iterator<std::forward_iterator_tag, std::pair<
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType> >
 class HashMap {
   public:
-    constexpr static int SIZELIMIT = 4, INCREASE = 8, MINSIZE = 8, ALIVE = 1, DEAD = 2, EMPTY = 0;
+    constexpr static int SIZELIMIT = 4; // Constant that keeps track of the fullness of the table.
+    constexpr static int INCREASE = 8; // A constant indicating how much the table is scaled.
+    constexpr static int MINSIZE = 8; // Minimum size of the table.
+    constexpr static int ALIVE = 1; // Indicate in occupied that element is alive in the table.
+    constexpr static int DEAD = 2; // Indicate in occupied that element is dead in the table.
+    constexpr static int EMPTY = 0; // Indicate in occupied that there is no element in the table.
     typedef Fiterator<const KeyType, ValueType> iterator;
     typedef ConstFiterator<const KeyType, ValueType> const_iterator;
     // Default constructor.
@@ -185,6 +199,7 @@ class HashMap {
          occupied_ = new char[capacity_];
          init_occupied_();
     }
+  
     // Standard insert with open addressing, scanning from memory to the right for dead and occupied cells.
     // Increasing the size by 10 times when the table is overloaded.
     void insert(const std::pair<KeyType, ValueType>& elem) {
@@ -197,6 +212,7 @@ class HashMap {
         occupied_[id] = ALIVE;
         adapt_size_();
     }
+  
     // Deleting an item by marking it dead.
     void erase(const KeyType& key) {
         size_t id = find_position_(key);
@@ -205,6 +221,7 @@ class HashMap {
         fullness_--;
         dead_elem_++;
     }
+  
     // Constructor from a pair of iterators.
     template<typename Iterator>
     HashMap(const Iterator& start, const Iterator& finish, const Hash& _hasher_ = Hash()): fullness_(0), dead_elem_(0), hasher_(_hasher_) {
@@ -224,6 +241,7 @@ class HashMap {
             ++it;
         }
     }
+  
     // Constructor from a list of elements.
     HashMap(const std::initializer_list<std::pair<KeyType, ValueType>>& list, const Hash& _hasher_ = Hash()): fullness_(0), dead_elem_(0), hasher_(_hasher_) {
         capacity_ = std::max(static_cast<size_t>(MINSIZE), list.size() * INCREASE);
@@ -236,6 +254,7 @@ class HashMap {
             ++it;
         }
     }
+  
     // Copy Constructor.
     HashMap(const HashMap& a): fullness_(0), dead_elem_(0), hasher_(a.hasher_) {
         capacity_ = std::max(static_cast<size_t>(MINSIZE), a.size() * INCREASE);
@@ -248,6 +267,7 @@ class HashMap {
             ++it;
         }
     }
+  
     // Returns count of elements in map.
     size_t size() const {
         return fullness_;
@@ -257,10 +277,12 @@ class HashMap {
         if (fullness_ == 0) return true;
         return false;
     }
+  
     // Returns the map hasher.
     Hash hash_function() const {
         return hasher_;
     }
+  
     // All simple actions with iterators work in O (1) amortized.
     iterator begin() {
         size_t start = capacity_;
@@ -297,6 +319,7 @@ class HashMap {
         const_iterator it(data_ + capacity_, occupied_ + capacity_, capacity_, capacity_);
         return it;
     }
+  
     // Returns an iterator on the found element found by linear scanning to the right.
     const_iterator find(const KeyType& key) const {
         size_t seed = hasher_(key);
@@ -308,7 +331,9 @@ class HashMap {
             }
         }
         const_iterator temp = end();
-        if (occupied_[id] != 1) return temp;
+        if (occupied_[id] != 1) {
+            return temp;
+        }
         const_iterator it(data_ + id, occupied_ + id, capacity_, id);
         return it;
     }
@@ -327,6 +352,7 @@ class HashMap {
         iterator it(data_ + id, occupied_ + id, capacity_, id);
         return it;
     }
+  
     // Operator [], amortized running for O (1).
     ValueType& operator[](const KeyType& key) {
         if (find(key) == end()) {
@@ -335,6 +361,7 @@ class HashMap {
         size_t id = find_position_(key);
         return data_[id].second;
     }
+  
     // The standard at method that can throw exceptions and amortized running for O (1).
     const ValueType& at(const KeyType& key) const {
         if (find(key) == end()) {
@@ -343,6 +370,7 @@ class HashMap {
         size_t id = find_position_(key);
         return data_[id].second;
     }
+  
     // Clears memory, call all destructors.
     void clear() {
         for (size_t id = 0; id < capacity_; ++id) {
@@ -365,6 +393,7 @@ class HashMap {
         }
         return *this;
     }
+  
     //Destructor.
     ~HashMap() {
         deallocate_();
@@ -389,6 +418,7 @@ class HashMap {
         }
         operator delete (data_);
     }
+  
     // Realocate memory with new capacity.
     void change_capacity_(size_t new_capacity_) {
         std::list<std::pair<const KeyType, ValueType>> elements(begin(), end());
@@ -404,12 +434,14 @@ class HashMap {
             insert(v);
         }
     }
+  
     // Initializes the oсcupied with zeros.
     void init_occupied_() {
         for (size_t i = 0; i < capacity_; ++i) {
             occupied_[i] = EMPTY;
         }
     }
+  
     // Linear search for a free cell with a step of 1.
     size_t find_position_(const KeyType& key) const {
         size_t seed = hasher_(key);
@@ -422,6 +454,7 @@ class HashMap {
         }
         return id;
     }
+  
     // Checks scalability condition.
     void adapt_size_() {
         if ((fullness_ + dead_elem_) * SIZELIMIT > capacity_) {
